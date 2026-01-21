@@ -1,6 +1,20 @@
 import { usePokerRoom } from '@/hooks/usePokerRoom';
 import { LobbyForm } from '@/components/poker/LobbyForm';
 import { GameRoom } from '@/components/poker/GameRoom';
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:3000'); // use for other host
+// const socket = io(); // use for same host
+
+socket.on('connect', () => {
+  console.log('connected:', socket.id);
+});
+
+socket.emit('ping', { hello: 'world' });
+
+socket.on('pong', (data) => {
+  console.log('pong:', data);
+});
 
 const Index = () => {
   const {
