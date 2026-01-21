@@ -3,15 +3,16 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { EventsGateway } from './events/events.gateways'
 
 @Module({
   imports: [
      ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'), // chứa index.html
-      exclude: ['/api*'], // không đụng API
+      rootPath: join(__dirname, '..', 'public'),
+      exclude: ['/api*'],
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, EventsGateway],
 })
 export class AppModule {}
