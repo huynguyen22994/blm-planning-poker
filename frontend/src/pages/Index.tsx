@@ -1,20 +1,6 @@
-import { usePokerRoom } from '@/hooks/usePokerRoom';
-import { LobbyForm } from '@/components/poker/LobbyForm';
-import { GameRoom } from '@/components/poker/GameRoom';
-import { io } from 'socket.io-client';
-
-const socket = io('http://localhost:3000'); // use for other host
-// const socket = io(); // use for same host
-
-socket.on('connect', () => {
-  console.log('connected:', socket.id);
-});
-
-socket.emit('ping', { hello: 'world' });
-
-socket.on('pong', (data) => {
-  console.log('pong:', data);
-});
+import { usePokerRoom } from "@/hooks/usePokerRoom";
+import { LobbyForm } from "@/components/poker/LobbyForm";
+import { GameRoom } from "@/components/poker/GameRoom";
 
 const Index = () => {
   const {
@@ -32,12 +18,7 @@ const Index = () => {
 
   // Show lobby if not in a room
   if (!room || !currentPlayer) {
-    return (
-      <LobbyForm
-        onCreateRoom={createRoom}
-        onJoinRoom={joinRoom}
-      />
-    );
+    return <LobbyForm onCreateRoom={createRoom} onJoinRoom={joinRoom} />;
   }
 
   // Show game room
