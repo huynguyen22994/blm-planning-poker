@@ -190,8 +190,6 @@ export const usePokerRoom = () => {
       roomId: roomId ?? "",
     });
 
-    console.log(result);
-
     if (!result) {
       leaveRoom();
       return null;
@@ -222,6 +220,7 @@ export const usePokerRoom = () => {
   return {
     room,
     currentPlayer,
+    setRoom,
     createRoom,
     joinRoom,
     vote,

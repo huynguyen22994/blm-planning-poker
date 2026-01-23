@@ -3,6 +3,8 @@ import { LobbyForm } from "@/components/poker/LobbyForm";
 import { GameRoom } from "@/components/poker/GameRoom";
 import { LobbyDialog } from "@/components/poker/DialogLobbyForm";
 import { useSearchParams } from "react-router-dom";
+import { useEffect } from "react";
+import { socket } from "@/lib/socket";
 
 const Index = () => {
   const [searchParams] = useSearchParams();
@@ -10,6 +12,7 @@ const Index = () => {
 
   const {
     room,
+    setRoom,
     currentPlayer,
     createRoom,
     joinRoom,
@@ -22,6 +25,22 @@ const Index = () => {
     verifyRoom,
     verifyPlayer,
   } = usePokerRoom();
+
+  useEffect(() => {
+    socket.on("user-joined", (data) => {
+      if (data) {
+        verifyRoom(roomId).then((room) => {
+          if (room) {
+            setRoom(room);
+          }
+        });
+      }
+    });
+
+    return () => {
+      socket.off("user-joined");
+    };
+  }, [roomId]);
 
   // Show lobby if not in a room
   if ((!room || !currentPlayer) && !roomId) {
@@ -49,8 +68,7 @@ const Index = () => {
     console.log("2");
     verifyRoom(roomId).then((data) => {
       console.log(data);
-      if(data) {
-        
+      if (data) {
       }
     });
     return (
@@ -64,11 +82,7 @@ const Index = () => {
   } else {
     // Verify ID người chơi và set vào localstore
     console.log("3");
-    verifyPlayer(roomId ?? room?.id, currentPlayer.id).then((data) => {
-      if (!data) {
-        //window.location.reload();
-      }
-    });
+    verifyPlayer(roomId ?? room?.id, currentPlayer.id)
   }
 
   // Show game room
