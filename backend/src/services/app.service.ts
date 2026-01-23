@@ -11,6 +11,7 @@ import { generateId } from '../utils';
 import { CACHE_TTL } from '../constants/cache-ttl.constant';
 import { Player, Room } from '../types';
 import { EventsGateway } from '../app.events.gateways';
+import { OnEvent } from '@nestjs/event-emitter';
 
 @Injectable()
 export class AppService {
@@ -119,5 +120,22 @@ export class AppService {
       message: 'get player success',
       data: player,
     };
+  }
+
+  /** NODE ENVENTS */
+  @OnEvent('room.player.left')
+  async handlePlayerLeft(payload: { roomId: string; playerId: string }) {
+    const { roomId, playerId } = payload;
+
+    console.log(payload);
+
+    const existingRoom: Room = await this.cache.get(roomId);
+    if (!existingRoom) return;
+
+    existingRoom.players = existingRoom.players.filter(
+      (item) => item.id !== playerId,
+    );
+
+    await this.cache.set(roomId, existingRoom, CACHE_TTL.HOUR);
   }
 }

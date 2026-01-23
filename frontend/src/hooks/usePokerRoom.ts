@@ -179,6 +179,17 @@ export const usePokerRoom = () => {
   }, [room]);
 
   const leaveRoom = useCallback(() => {
+    const oldRoom: string = storage.get("room");
+    const oldRoomObject: Room = oldRoom ? JSON.parse(oldRoom) : null;
+    const oldCurrentPlayer: string = storage.get("current-player");
+    const oldCurrentPlayerObject: Player = oldCurrentPlayer
+      ? JSON.parse(oldCurrentPlayer)
+      : null;
+
+    socket.emit("leave-room", {
+      roomId: oldRoomObject?.id,
+      playerId: oldCurrentPlayerObject?.id,
+    });
     setRoom(null);
     setCurrentPlayer(null);
     storage.remove("room");

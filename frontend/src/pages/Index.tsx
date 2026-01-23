@@ -37,8 +37,19 @@ const Index = () => {
       }
     });
 
+    socket.on("user-left", (data) => {
+      if (data) {
+        verifyRoom(roomId).then((room) => {
+          if (room) {
+            setRoom(room);
+          }
+        });
+      }
+    });
+
     return () => {
       socket.off("user-joined");
+      socket.off("user-left");
     };
   }, [roomId]);
 
@@ -82,7 +93,7 @@ const Index = () => {
   } else {
     // Verify ID người chơi và set vào localstore
     console.log("3");
-    verifyPlayer(roomId ?? room?.id, currentPlayer.id)
+    verifyPlayer(roomId ?? room?.id, currentPlayer.id);
   }
 
   // Show game room

@@ -9,18 +9,17 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { AppService } from './services/app.service';
-import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @WebSocketGateway({
   cors: { origin: '*' },
   namespace: '/',
 })
-export class EventsGateway
-  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
-{
+export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   private server: Server;
+
+  constructor(private eventEmitter: EventEmitter2) {}
 
   afterInit() {
     console.log('Socket initialized');
@@ -54,7 +53,31 @@ export class EventsGateway
     client.join(roomId);
     client.emit('user-joined', {
       roomId,
-      player
+      player,
     });
+  }
+
+  @SubscribeMessage('leave-room')
+  async handleLeave(
+    @MessageBody() message: any,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const { roomId, playerId } = message ?? {};
+
+    if (!roomId || !playerId) {
+      return;
+    }
+    this.eventEmitter.emit('room.player.left', {
+      roomId,
+      playerId,
+    });
+    setTimeout(() => {
+      client.leave(roomId);
+      client.to(roomId).emit('user-left', {
+        roomId,
+        playerId,
+      });
+      console.log(`Player ${playerId} left room ${roomId}`);
+    }, 800);
   }
 }

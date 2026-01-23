@@ -6,6 +6,7 @@ import { CACHE_TTL } from './constants/cache-ttl.constant';
 
 /** IMPORTS */
 import { CacheModule } from '@nestjs/cache-manager';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 /** SERVICES */
 import { AppService } from './services/app.service';
@@ -22,6 +23,7 @@ import { EventsGateway } from './app.events.gateways';
       ttl: CACHE_TTL.FIFTEEN_MINUTES,
       max: 1000,
     }),
+    EventEmitterModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService, EventsGateway],
