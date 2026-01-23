@@ -1,6 +1,6 @@
-import { Button } from '@/components/ui/button';
-import { Eye, RotateCcw, Users, Copy, Check } from 'lucide-react';
-import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Eye, RotateCcw, Users, Copy, Check } from "lucide-react";
+import { useState } from "react";
 
 interface GameControlsProps {
   isHost: boolean;
@@ -40,7 +40,9 @@ export const GameControls = ({
         <div>
           <p className="text-sm text-muted-foreground">Room ID</p>
           <div className="flex items-center gap-2">
-            <code className="text-lg font-mono font-bold text-primary">{roomId}</code>
+            <code className="text-lg font-mono font-bold text-primary">
+              {roomId}
+            </code>
             <Button
               variant="ghost"
               size="icon"
@@ -72,41 +74,39 @@ export const GameControls = ({
       )}
 
       {/* Host Controls */}
-      {isHost && (
-        <div className="flex flex-col gap-3">
-          {!isRevealed ? (
-            <Button
-              onClick={onReveal}
-              className="w-full gap-2"
-              size="lg"
-              disabled={votedCount === 0}
-            >
-              <Eye className="w-5 h-5" />
-              Reveal Cards
-            </Button>
-          ) : (
-            <Button
-              onClick={onReset}
-              variant="secondary"
-              className="w-full gap-2"
-              size="lg"
-            >
-              <RotateCcw className="w-5 h-5" />
-              New Round
-            </Button>
-          )}
-          
+      <div className="flex flex-col gap-3">
+        {!isRevealed ? (
           <Button
-            onClick={onAddDemoPlayers}
-            variant="outline"
+            onClick={onReveal}
             className="w-full gap-2"
-            size="sm"
+            size="lg"
+            disabled={votedCount === 0}
           >
-            <Users className="w-4 h-4" />
-            Add Demo Players
+            <Eye className="w-5 h-5" />
+            Reveal Cards
           </Button>
-        </div>
-      )}
+        ) : (
+          <Button
+            onClick={onReset}
+            variant="secondary"
+            className="w-full gap-2"
+            size="lg"
+          >
+            <RotateCcw className="w-5 h-5" />
+            New Round
+          </Button>
+        )}
+
+        {/* <Button
+          onClick={onAddDemoPlayers}
+          variant="outline"
+          className="w-full gap-2"
+          size="sm"
+        >
+          <Users className="w-4 h-4" />
+          Add Demo Players
+        </Button> */}
+      </div>
     </div>
   );
 };
