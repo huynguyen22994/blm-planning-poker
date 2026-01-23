@@ -1,118 +1,154 @@
-import { useState, useCallback } from 'react';
-import { Room, Player, CardValue, PlayerRole } from '@/types/poker';
+import { useState, useCallback } from "react";
+import { Room, Player, CardValue, PlayerRole } from "@/types/poker";
+import api from "../lib/axios";
+import { useNavigate } from "react-router-dom";
+import { storage } from "../lib/storage";
 
-const generateId = () => Math.random().toString(36).substring(2, 8).toUpperCase();
+const generateId = () =>
+  Math.random().toString(36).substring(2, 8).toUpperCase();
 
 export const usePokerRoom = () => {
-  const [room, setRoom] = useState<Room | null>(null);
-  const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
+  const oldRoom: string = storage.get("room");
+  const oldRoomObject: Room = oldRoom ? JSON.parse(oldRoom) : null;
+  const oldCurrentPlayer: string = storage.get("current-player");
+  const oldCurrentPlayerObject: Player = oldCurrentPlayer
+    ? JSON.parse(oldCurrentPlayer)
+    : null;
 
-  const createRoom = useCallback((playerName: string, roomName: string) => {
-    const playerId = generateId();
-    const roomId = generateId();
-    
-    const host: Player = {
-      id: playerId,
-      name: playerName,
-      role: 'host',
-      vote: null,
-      hasVoted: false,
-    };
+  const [room, setRoom] = useState<Room | null>(oldRoomObject ?? null);
+  const [currentPlayer, setCurrentPlayer] = useState<Player | null>(
+    oldCurrentPlayerObject ?? null,
+  );
 
-    const newRoom: Room = {
-      id: roomId,
-      name: roomName,
-      hostId: playerId,
-      players: [host],
-      isRevealed: false,
-      currentRound: 1,
-    };
+  const navigate = useNavigate();
 
-    setRoom(newRoom);
-    setCurrentPlayer(host);
-    return roomId;
-  }, []);
+  const createRoom = useCallback(
+    async (playerName: string, roomName: string) => {
+      const result = await api.post("/api/create-room", {
+        username: playerName,
+        roomName: roomName,
+      });
 
-  const joinRoom = useCallback((roomId: string, playerName: string, role: PlayerRole = 'player') => {
-    const playerId = generateId();
-    
-    const newPlayer: Player = {
-      id: playerId,
-      name: playerName,
-      role,
-      vote: null,
-      hasVoted: false,
-    };
+      if (!result) {
+        console.log("Create fail");
+        return;
+      }
 
-    // For demo purposes, create a mock room if joining
-    const mockRoom: Room = {
-      id: roomId,
-      name: `Room ${roomId}`,
-      hostId: playerId,
-      players: [newPlayer],
-      isRevealed: false,
-      currentRound: 1,
-    };
+      const host: Player = result.data?.["players"][0] ?? null;
+      const newRoom: Room = result.data;
 
-    setRoom(mockRoom);
-    setCurrentPlayer(newPlayer);
-  }, []);
+      setRoom(newRoom);
+      setCurrentPlayer(host);
 
-  const vote = useCallback((value: CardValue) => {
-    if (!room || !currentPlayer) return;
+      storage.set("room", JSON.stringify(newRoom));
+      storage.set("current-player", JSON.stringify(host));
 
-    setRoom(prev => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        players: prev.players.map(p =>
-          p.id === currentPlayer.id
-            ? { ...p, vote: value, hasVoted: true }
-            : p
-        ),
+      navigate(`/?room-id=${newRoom?.id}`);
+      return newRoom?.id;
+    },
+    [],
+  );
+
+  const joinRoom = useCallback(
+    (roomId: string, playerName: string, role: PlayerRole = "player") => {
+      const playerId = generateId();
+
+      const newPlayer: Player = {
+        id: playerId,
+        name: playerName,
+        role,
+        vote: null,
+        hasVoted: false,
       };
-    });
 
-    setCurrentPlayer(prev => {
-      if (!prev) return prev;
-      return { ...prev, vote: value, hasVoted: true };
-    });
-  }, [room, currentPlayer]);
+      // For demo purposes, create a mock room if joining
+      const mockRoom: Room = {
+        id: roomId,
+        name: `Room ${roomId}`,
+        hostId: playerId,
+        players: [newPlayer],
+        isRevealed: false,
+        currentRound: 1,
+      };
+
+      setRoom(mockRoom);
+      setCurrentPlayer(newPlayer);
+    },
+    [],
+  );
+
+  const vote = useCallback(
+    (value: CardValue) => {
+      if (!room || !currentPlayer) return;
+
+      setRoom((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          players: prev.players.map((p) =>
+            p.id === currentPlayer.id
+              ? { ...p, vote: value, hasVoted: true }
+              : p,
+          ),
+        };
+      });
+
+      setCurrentPlayer((prev) => {
+        if (!prev) return prev;
+        return { ...prev, vote: value, hasVoted: true };
+      });
+    },
+    [room, currentPlayer],
+  );
 
   const reveal = useCallback(() => {
-    if (!room || currentPlayer?.role !== 'host') return;
-    setRoom(prev => prev ? { ...prev, isRevealed: true } : prev);
+    if (!room || currentPlayer?.role !== "host") return;
+    setRoom((prev) => (prev ? { ...prev, isRevealed: true } : prev));
   }, [room, currentPlayer]);
 
   const reset = useCallback(() => {
-    if (!room || currentPlayer?.role !== 'host') return;
-    setRoom(prev => {
+    if (!room || currentPlayer?.role !== "host") return;
+    setRoom((prev) => {
       if (!prev) return prev;
       return {
         ...prev,
         isRevealed: false,
         currentRound: prev.currentRound + 1,
-        players: prev.players.map(p => ({
+        players: prev.players.map((p) => ({
           ...p,
           vote: null,
           hasVoted: false,
         })),
       };
     });
-    setCurrentPlayer(prev => prev ? { ...prev, vote: null, hasVoted: false } : prev);
+    setCurrentPlayer((prev) =>
+      prev ? { ...prev, vote: null, hasVoted: false } : prev,
+    );
   }, [room, currentPlayer]);
 
   const addDemoPlayers = useCallback(() => {
     if (!room) return;
-    
+
     const demoPlayers: Player[] = [
-      { id: 'demo1', name: 'Alice', role: 'player', vote: '5', hasVoted: true },
-      { id: 'demo2', name: 'Bob', role: 'player', vote: '8', hasVoted: true },
-      { id: 'demo3', name: 'Charlie', role: 'player', vote: '5', hasVoted: true },
-      { id: 'demo4', name: 'Diana', role: 'spectator', vote: null, hasVoted: false },
+      { id: "demo1", name: "Alice", role: "player", vote: "5", hasVoted: true },
+      { id: "demo2", name: "Bob", role: "player", vote: "8", hasVoted: true },
+      {
+        id: "demo3",
+        name: "Charlie",
+        role: "player",
+        vote: "5",
+        hasVoted: true,
+      },
+      {
+        id: "demo4",
+        name: "Diana",
+        role: "spectator",
+        vote: null,
+        hasVoted: false,
+      },
     ];
 
-    setRoom(prev => {
+    setRoom((prev) => {
       if (!prev) return prev;
       return {
         ...prev,
@@ -123,13 +159,13 @@ export const usePokerRoom = () => {
 
   const calculateAverage = useCallback(() => {
     if (!room) return null;
-    
+
     const numericVotes = room.players
-      .filter(p => p.vote && !['?', '☕'].includes(p.vote))
-      .map(p => parseInt(p.vote!, 10));
-    
+      .filter((p) => p.vote && !["?", "☕"].includes(p.vote))
+      .map((p) => parseInt(p.vote!, 10));
+
     if (numericVotes.length === 0) return null;
-    
+
     const avg = numericVotes.reduce((a, b) => a + b, 0) / numericVotes.length;
     return Math.round(avg * 10) / 10;
   }, [room]);
@@ -137,6 +173,8 @@ export const usePokerRoom = () => {
   const leaveRoom = useCallback(() => {
     setRoom(null);
     setCurrentPlayer(null);
+    storage.remove("room");
+    storage.remove("current-player");
   }, []);
 
   return {

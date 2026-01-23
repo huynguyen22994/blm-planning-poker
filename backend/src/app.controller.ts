@@ -13,8 +13,9 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Post('api/join-room')
-  async joinRoom(@Body() body: JoinRoomDto) {
-    return this.appService.joinRoom(body);
+  @Post('api/create-room')
+  async createRoom(@Body() body: JoinRoomDto) {
+    const result = await this.appService.joinRoom(body);
+    return result;
   }
 }
