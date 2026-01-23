@@ -6,65 +6,52 @@ import {
   OnGatewayInit,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { AppService } from './services/app.service';
+import { Injectable } from '@nestjs/common';
 
 @WebSocketGateway({
-  cors: {
-    origin: '*',
-  },
+  cors: { origin: '*' },
   namespace: '/',
 })
 export class EventsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
+  @WebSocketServer()
   private server: Server;
 
-  constructor(private readonly appService: AppService) {}
-
-  /** INITIAL */
-  afterInit(server: Server) {
-    this.server = server;
+  afterInit() {
     console.log('Socket initialized');
   }
 
-  /** CONNECTION */
   handleConnection(client: Socket) {
     console.log('Client connected:', client.id);
-
-    // gửi message khi connect
-    client.emit('connected', {
-      id: client.id,
-      time: new Date(),
-    });
   }
 
-  /** DISCONNECTION */
   handleDisconnect(client: Socket) {
     console.log('Client disconnected:', client.id);
   }
 
-  /** EVENTS */
-  @SubscribeMessage('ping')
-  handlePing(@MessageBody() data: any, @ConnectedSocket() client: Socket) {
-    console.log('Ping received:', data);
-
-    // emit lại cho client gửi
-    client.emit('pong', {
-      message: 'pong',
-      time: new Date(),
-    });
-
-    // hoặc broadcast
-    this.server.emit('broadcast', data);
+  /** 🔥 METHOD CHO SERVICE DÙNG */
+  emitToRoom(room: string, event: string, payload: any) {
+    this.server.to(room).emit(event, payload);
   }
 
-  @SubscribeMessage('join')
-  handleJoin(@MessageBody() room: string, @ConnectedSocket() client: Socket) {
-    client.join(room);
-    client.emit('joined', room);
+  emitToClient(clientId: string, event: string, payload: any) {
+    this.server.to(clientId).emit(event, payload);
+  }
 
-    // this.server.to('room1').emit('msg', 'hello room');
+  emitAll(event: string, payload: any) {
+    this.server.emit(event, payload);
+  }
+
+  /** EVENTS */
+  @SubscribeMessage('join-room')
+  handleJoin(@MessageBody() message: any, @ConnectedSocket() client: Socket) {
+    const { roomId, player } = message ?? {};
+    client.join(roomId);
+    client.emit('user-joined', message);
   }
 }

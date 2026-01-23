@@ -1,14 +1,22 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { JoinRoomDto } from '../dto/join-room.dto';
+import {
+  JoinRoomDto,
+  VerifyRoomDto,
+  VerifyPlayerDto,
+} from '../dto/join-room.dto';
 import { generateId } from '../utils';
 import { CACHE_TTL } from '../constants/cache-ttl.constant';
 import { Player, Room } from '../types';
+import { EventsGateway } from '../app.events.gateways';
 
 @Injectable()
 export class AppService {
-  constructor(@Inject(CACHE_MANAGER) private cache: Cache) {}
+  constructor(
+    private readonly eventsGateway: EventsGateway,
+    @Inject(CACHE_MANAGER) private cache: Cache,
+  ) {}
 
   getHello(): string {
     return 'Hello World!';
@@ -49,5 +57,23 @@ export class AppService {
       message: 'Create room success',
       data: newRoom,
     };
+  }
+
+  async verifyRoom(body: VerifyRoomDto): Promise<unknown> {
+    const { roomId } = body;
+    if (!roomId) return null;
+
+    const existingRoom: Room = await this.cache.get(roomId);
+    if (!existingRoom) return null;
+
+    return {
+      success: true,
+      message: 'get room success',
+      data: existingRoom,
+    };
+  }
+
+  async verifyPlayer(body: VerifyPlayerDto): Promise<unknown> {
+    return undefined;
   }
 }

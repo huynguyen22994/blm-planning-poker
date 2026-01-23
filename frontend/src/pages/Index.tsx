@@ -19,6 +19,7 @@ const Index = () => {
     addDemoPlayers,
     calculateAverage,
     leaveRoom,
+    verifyRoom,
   } = usePokerRoom();
 
   // Show lobby if not in a room
@@ -28,6 +29,12 @@ const Index = () => {
 
   if (!room && !currentPlayer) {
     // Hiện popup đặt tên room và người chơi -> set thành host room
+    console.log("1");
+    verifyRoom(roomId).then((data) => {
+      if (data) {
+        window.location.reload();
+      }
+    });
     return (
       <LobbyDialog
         roomId={roomId}
@@ -38,6 +45,10 @@ const Index = () => {
     );
   } else if (room && !currentPlayer) {
     // Hiện popup đặt tên người chơi
+    console.log("2");
+    verifyRoom(roomId).then((data) => {
+      console.log(data);
+    });
     return (
       <LobbyDialog
         roomId={roomId}
@@ -48,7 +59,9 @@ const Index = () => {
     );
   } else {
     // Verify ID người chơi và set vào localstore
-    console.log(roomId);
+    verifyRoom(roomId ?? room?.id).then((data) => {
+      console.log(data);
+    });
   }
 
   // Show game room

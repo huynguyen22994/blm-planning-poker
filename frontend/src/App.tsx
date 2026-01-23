@@ -7,10 +7,13 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { socket } from "./lib/socket";
 import { useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const queryClient = new QueryClient();
 
 const App = () => {
+  const { toast } = useToast();
+
   useEffect(() => {
     socket.on("connect", () => {
       console.log("connected:", socket.id);
@@ -20,6 +23,19 @@ const App = () => {
 
     socket.on("pong", (data) => {
       console.log("pong:", data);
+    });
+
+    socket.on("user-joined", (data) => {
+      console.log("User joined room:", data);
+      toast({
+        open: true,
+        title: "Hello",
+        description: "memeber joined",
+      });
+    });
+
+    socket.on("room-event", (data) => {
+      console.log("Room event:", data);
     });
 
     return () => {

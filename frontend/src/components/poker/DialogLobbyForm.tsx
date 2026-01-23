@@ -26,17 +26,18 @@ export function LobbyDialog({
   onCreate,
   onJoin,
 }: ScrumPokerDialogProps) {
+  const hasRoom = room?.id ? true : false;
+
   const [playerName, setPlayerName] = useState("");
-  const [roomName, setRoomName] = useState("");
+  const [roomName, setRoomName] = useState(room?.name ?? "");
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleOnSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onCreate(playerName, roomName);
-  };
-
-  const handleJoin = (e: React.FormEvent) => {
-    e.preventDefault();
-    onJoin(playerName, roomId);
+    if (hasRoom) {
+      onJoin(playerName, roomId);
+    } else {
+      onCreate(playerName, roomName);
+    }
   };
 
   return (
@@ -64,17 +65,19 @@ export function LobbyDialog({
               </TabsList>
 
               <TabsContent value="join-room">
-                <form onSubmit={handleCreate} className="space-y-4">
+                <form onSubmit={handleOnSubmit} className="space-y-4">
                   <Input
                     placeholder="Your name"
                     value={playerName}
                     onChange={(e) => setPlayerName(e.target.value)}
                   />
-                  <Input
-                    placeholder="Room name"
-                    value={roomName}
-                    onChange={(e) => setRoomName(e.target.value)}
-                  />
+                  {!hasRoom ? (
+                    <Input
+                      placeholder="Room name"
+                      value={roomName}
+                      onChange={(e) => setRoomName(e.target.value)}
+                    />
+                  ) : null}
                   <Button
                     type="submit"
                     className="w-full gap-2"

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { CACHE_TTL} from './constants/cache-ttl.constant'
+import { CACHE_TTL } from './constants/cache-ttl.constant';
 
 /** IMPORTS */
 import { CacheModule } from '@nestjs/cache-manager';

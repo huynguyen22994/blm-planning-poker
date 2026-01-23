@@ -9,3 +9,19 @@ export class JoinRoomDto {
   @IsNotEmpty()
   roomName: string;
 }
+
+export class VerifyRoomDto {
+  @IsString()
+  @IsNotEmpty()
+  roomId: string;
+}
+
+export class VerifyPlayerDto {
+  @IsString()
+  @IsNotEmpty()
+  roomId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  userId: string;
+}

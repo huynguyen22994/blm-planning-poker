@@ -3,6 +3,7 @@ import { Room, Player, CardValue, PlayerRole } from "@/types/poker";
 import api from "../lib/axios";
 import { useNavigate } from "react-router-dom";
 import { storage } from "../lib/storage";
+import { socket } from "../lib/socket";
 
 const generateId = () =>
   Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -43,6 +44,10 @@ export const usePokerRoom = () => {
       storage.set("room", JSON.stringify(newRoom));
       storage.set("current-player", JSON.stringify(host));
 
+      socket.emit("join-room", {
+        roomId: newRoom?.id,
+        palyer: host,
+      });
       navigate(`/?room-id=${newRoom?.id}`);
       return newRoom?.id;
     },
@@ -177,6 +182,39 @@ export const usePokerRoom = () => {
     storage.remove("current-player");
   }, []);
 
+  const verifyRoom = useCallback(async (roomId: string): Promise<Room> => {
+    const result = await api.post("/api/verify-room", {
+      roomId: roomId ?? "",
+    });
+
+    console.log(result);
+
+    if (!result) {
+      leaveRoom();
+      return null;
+    }
+    const room: Room = result.data;
+    storage.set("room", JSON.stringify(room));
+    return room;
+  }, []);
+
+  const verifyPlayer = useCallback(
+    async (roomId: string, playerId: string): Promise<Player> => {
+      const result = await api.post("/api/verify-player", {
+        userId: playerId,
+        roomId: roomId,
+      });
+
+      if (!result) return null;
+      const player: Player = result.data;
+
+      setCurrentPlayer(player);
+      storage.set("current-player", JSON.stringify(player));
+      return player;
+    },
+    [],
+  );
+
   return {
     room,
     currentPlayer,
@@ -188,5 +226,7 @@ export const usePokerRoom = () => {
     addDemoPlayers,
     calculateAverage,
     leaveRoom,
+    verifyRoom,
+    verifyPlayer,
   };
 };
