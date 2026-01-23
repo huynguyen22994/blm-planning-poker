@@ -24,10 +24,11 @@ export const usePokerRoom = () => {
   const navigate = useNavigate();
 
   const createRoom = useCallback(
-    async (playerName: string, roomName: string) => {
+    async (playerName: string, roomName: string, roomId?: string) => {
       const result = await api.post("/api/create-room", {
         username: playerName,
         roomName: roomName,
+        roomId: roomId,
       });
 
       if (!result) {
@@ -46,7 +47,7 @@ export const usePokerRoom = () => {
 
       socket.emit("join-room", {
         roomId: newRoom?.id,
-        palyer: host,
+        player: host,
       });
       navigate(`/?room-id=${newRoom?.id}`);
       return newRoom?.id;
@@ -55,29 +56,31 @@ export const usePokerRoom = () => {
   );
 
   const joinRoom = useCallback(
-    (roomId: string, playerName: string, role: PlayerRole = "player") => {
-      const playerId = generateId();
+    async (roomId: string, playerName: string, role: PlayerRole = "player") => {
+      const result = await api.post("/api/join-room", {
+        username: playerName,
+        roomId: roomId,
+      });
 
-      const newPlayer: Player = {
-        id: playerId,
-        name: playerName,
-        role,
-        vote: null,
-        hasVoted: false,
-      };
+      if (!result) {
+        console.log("Join fail");
+        return;
+      }
 
-      // For demo purposes, create a mock room if joining
-      const mockRoom: Room = {
-        id: roomId,
-        name: `Room ${roomId}`,
-        hostId: playerId,
-        players: [newPlayer],
-        isRevealed: false,
-        currentRound: 1,
-      };
+      const newRoom: Room = result.data;
+      const players: Player[] = result.data?.["players"] ?? [];
+      const player: Player = players.find((item) => item.name === playerName);
 
-      setRoom(mockRoom);
-      setCurrentPlayer(newPlayer);
+      setRoom(newRoom);
+      setCurrentPlayer(player);
+
+      storage.set("room", JSON.stringify(newRoom));
+      storage.set("current-player", JSON.stringify(player));
+
+      socket.emit("join-room", {
+        roomId: newRoom?.id,
+        player: player,
+      });
     },
     [],
   );
@@ -205,10 +208,11 @@ export const usePokerRoom = () => {
         roomId: roomId,
       });
 
-      if (!result) return null;
+      if (!result) {
+        storage.remove("current-player");
+        return null;
+      }
       const player: Player = result.data;
-
-      setCurrentPlayer(player);
       storage.set("current-player", JSON.stringify(player));
       return player;
     },

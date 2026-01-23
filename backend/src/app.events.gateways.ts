@@ -52,6 +52,9 @@ export class EventsGateway
   handleJoin(@MessageBody() message: any, @ConnectedSocket() client: Socket) {
     const { roomId, player } = message ?? {};
     client.join(roomId);
-    client.emit('user-joined', message);
+    client.emit('user-joined', {
+      roomId,
+      player
+    });
   }
 }

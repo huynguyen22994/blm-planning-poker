@@ -1,4 +1,18 @@
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+
+export class CreateRoomDto {
+  @IsString()
+  @IsNotEmpty()
+  username: string;
+
+  @IsString()
+  @IsNotEmpty()
+  roomName: string;
+
+  @IsString()
+  @IsOptional()
+  roomId?: string;
+}
 
 export class JoinRoomDto {
   @IsString()
@@ -7,7 +21,7 @@ export class JoinRoomDto {
 
   @IsString()
   @IsNotEmpty()
-  roomName: string;
+  roomId: string;
 }
 
 export class VerifyRoomDto {

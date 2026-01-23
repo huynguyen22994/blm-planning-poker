@@ -3,6 +3,7 @@ import { AppService } from './services/app.service';
 
 /** DTO */
 import {
+  CreateRoomDto,
   JoinRoomDto,
   VerifyRoomDto,
   VerifyPlayerDto,
@@ -18,7 +19,13 @@ export class AppController {
   }
 
   @Post('api/create-room')
-  async createRoom(@Body() body: JoinRoomDto) {
+  async createRoom(@Body() body: CreateRoomDto) {
+    const result = await this.appService.createRoom(body);
+    return result;
+  }
+
+  @Post('api/join-room')
+  async joinRoom(@Body() body: JoinRoomDto) {
     const result = await this.appService.joinRoom(body);
     return result;
   }

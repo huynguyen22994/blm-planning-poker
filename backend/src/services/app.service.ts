@@ -2,6 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import {
+  CreateRoomDto,
   JoinRoomDto,
   VerifyRoomDto,
   VerifyPlayerDto,
@@ -22,10 +23,9 @@ export class AppService {
     return 'Hello World!';
   }
 
-  async joinRoom(body: JoinRoomDto): Promise<unknown> {
-    console.log(body);
+  async createRoom(body: CreateRoomDto): Promise<unknown> {
     const { username, roomName } = body;
-    const roomId = generateId();
+    const roomId = body?.roomId ? body.roomId : generateId();
     const playerId = generateId();
 
     const host: Player = {
@@ -59,6 +59,37 @@ export class AppService {
     };
   }
 
+  async joinRoom(body: JoinRoomDto): Promise<unknown> {
+    const { username, roomId } = body;
+
+    if (!username || !roomId) return null;
+    const room: Room = await this.cache.get(roomId);
+    if (!room) return null;
+
+    const playerId = generateId();
+    const player: Player = {
+      id: playerId,
+      name: username,
+      role: 'player',
+      vote: null,
+      hasVoted: false,
+    };
+
+    room.players.push(player);
+    await this.cache.set(roomId, room, CACHE_TTL.HOUR);
+
+    this.eventsGateway.emitToRoom(roomId, 'user-joined', {
+      roomId: roomId,
+      player: player,
+    });
+
+    return {
+      success: true,
+      message: 'Join room success',
+      data: room,
+    };
+  }
+
   async verifyRoom(body: VerifyRoomDto): Promise<unknown> {
     const { roomId } = body;
     if (!roomId) return null;
@@ -74,6 +105,19 @@ export class AppService {
   }
 
   async verifyPlayer(body: VerifyPlayerDto): Promise<unknown> {
-    return undefined;
+    const { roomId, userId } = body;
+
+    const existingRoom: Room = await this.cache.get(roomId);
+    if (!existingRoom) return null;
+
+    const players = existingRoom.players ?? [];
+    const player = players.find((item) => item.id === userId);
+    if (!player) return null;
+
+    return {
+      success: true,
+      message: 'get player success',
+      data: player,
+    };
   }
 }

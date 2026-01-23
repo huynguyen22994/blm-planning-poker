@@ -16,7 +16,7 @@ import { Room } from "@/types/poker";
 interface ScrumPokerDialogProps {
   roomId: string;
   room: Room;
-  onCreate: (playerName: string, roomName: string) => void;
+  onCreate: (playerName: string, roomName: string, roomId?: string) => void;
   onJoin: (playerName: string, roomId: string) => void;
 }
 
@@ -34,9 +34,9 @@ export function LobbyDialog({
   const handleOnSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (hasRoom) {
-      onJoin(playerName, roomId);
+      onJoin(roomId, playerName);
     } else {
-      onCreate(playerName, roomName);
+      onCreate(playerName, roomName, roomId);
     }
   };
 

@@ -20,6 +20,7 @@ const Index = () => {
     calculateAverage,
     leaveRoom,
     verifyRoom,
+    verifyPlayer,
   } = usePokerRoom();
 
   // Show lobby if not in a room
@@ -48,6 +49,9 @@ const Index = () => {
     console.log("2");
     verifyRoom(roomId).then((data) => {
       console.log(data);
+      if(data) {
+        
+      }
     });
     return (
       <LobbyDialog
@@ -59,8 +63,11 @@ const Index = () => {
     );
   } else {
     // Verify ID người chơi và set vào localstore
-    verifyRoom(roomId ?? room?.id).then((data) => {
-      console.log(data);
+    console.log("3");
+    verifyPlayer(roomId ?? room?.id, currentPlayer.id).then((data) => {
+      if (!data) {
+        //window.location.reload();
+      }
     });
   }
 

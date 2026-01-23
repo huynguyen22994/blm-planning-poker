@@ -27,10 +27,11 @@ const App = () => {
 
     socket.on("user-joined", (data) => {
       console.log("User joined room:", data);
+      const { player } = data ?? {};
       toast({
         open: true,
         title: "Hello",
-        description: "memeber joined",
+        description: `${player?.name} joined`,
       });
     });
 
