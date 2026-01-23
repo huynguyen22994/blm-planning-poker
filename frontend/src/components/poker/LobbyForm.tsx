@@ -40,7 +40,7 @@ export const LobbyForm = ({ onCreateRoom, onJoinRoom }: LobbyFormProps) => {
       <Card className="w-full max-w-md glass-card border-border/30 relative z-10">
         <CardHeader className="text-center pb-2">
           <div className="mx-auto mb-4 w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/30">
-            <Spade className="w-8 h-8 text-primary-foreground" />
+            BLM
           </div>
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
             Scrum Poker

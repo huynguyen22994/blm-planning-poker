@@ -22,5 +22,6 @@ export default defineConfig(({ mode }) => ({
     outDir: '../backend/public',
     assetsDir: 'static',
     emptyOutDir: true,
-  }
+  },
+  envDir: path.resolve(__dirname, './env'),
 }));

@@ -1,11 +1,12 @@
-import { Room, Player, CardValue } from '@/types/poker';
-import { CardDeck } from './CardDeck';
-import { PlayerList } from './PlayerList';
-import { GameControls } from './GameControls';
-import { Button } from '@/components/ui/button';
-import { LogOut, Spade } from 'lucide-react';
+import { Room, Player, CardValue } from "@/types/poker";
+import { CardDeck } from "./CardDeck";
+import { PlayerList } from "./PlayerList";
+import { GameControls } from "./GameControls";
+import { Button } from "@/components/ui/button";
+import { LogOut, Spade } from "lucide-react";
 
 interface GameRoomProps {
+  roomId: string;
   room: Room;
   currentPlayer: Player;
   onVote: (value: CardValue) => void;
@@ -17,6 +18,7 @@ interface GameRoomProps {
 }
 
 export const GameRoom = ({
+  roomId,
   room,
   currentPlayer,
   onVote,
@@ -26,8 +28,12 @@ export const GameRoom = ({
   onLeave,
   average,
 }: GameRoomProps) => {
-  const votedCount = room.players.filter(p => p.hasVoted && p.role !== 'spectator').length;
-  const totalPlayers = room.players.filter(p => p.role !== 'spectator').length;
+  const votedCount = room.players.filter(
+    (p) => p.hasVoted && p.role !== "spectator",
+  ).length;
+  const totalPlayers = room.players.filter(
+    (p) => p.role !== "spectator",
+  ).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
@@ -36,11 +42,13 @@ export const GameRoom = ({
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-              <Spade className="w-5 h-5 text-primary-foreground" />
+              BLM
             </div>
             <div>
               <h1 className="font-bold text-lg">{room.name}</h1>
-              <p className="text-sm text-muted-foreground">Round {room.currentRound}</p>
+              <p className="text-sm text-muted-foreground">
+                Round {room.currentRound}
+              </p>
             </div>
           </div>
           <Button variant="ghost" size="sm" onClick={onLeave} className="gap-2">
@@ -76,14 +84,12 @@ export const GameRoom = ({
                     Waiting for others to vote...
                   </p>
                 ) : (
-                  <p className="text-lg font-medium">
-                    Pick your estimate
-                  </p>
+                  <p className="text-lg font-medium">Pick your estimate</p>
                 )}
               </div>
 
               {/* Card Deck */}
-              {currentPlayer.role !== 'spectator' && (
+              {currentPlayer.role !== "spectator" && (
                 <CardDeck
                   selectedValue={currentPlayer.vote}
                   onSelect={onVote}
@@ -96,7 +102,7 @@ export const GameRoom = ({
           {/* Right Column - Controls */}
           <div className="lg:col-span-1 order-3">
             <GameControls
-              isHost={currentPlayer.role === 'host'}
+              isHost={currentPlayer.role === "host"}
               isRevealed={room.isRevealed}
               roomId={room.id}
               average={average}

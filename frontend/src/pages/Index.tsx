@@ -1,24 +1,18 @@
-import { usePokerRoom } from '@/hooks/usePokerRoom';
-import { LobbyForm } from '@/components/poker/LobbyForm';
-import { GameRoom } from '@/components/poker/GameRoom';
-import { io } from 'socket.io-client';
-
-const socket = io('http://localhost:3000'); // use for other host
-// const socket = io(); // use for same host
-
-socket.on('connect', () => {
-  console.log('connected:', socket.id);
-});
-
-socket.emit('ping', { hello: 'world' });
-
-socket.on('pong', (data) => {
-  console.log('pong:', data);
-});
+import { usePokerRoom } from "@/hooks/usePokerRoom";
+import { LobbyForm } from "@/components/poker/LobbyForm";
+import { GameRoom } from "@/components/poker/GameRoom";
+import { LobbyDialog } from "@/components/poker/DialogLobbyForm";
+import { useSearchParams } from "react-router-dom";
+import { useEffect } from "react";
+import { socket } from "@/lib/socket";
 
 const Index = () => {
+  const [searchParams] = useSearchParams();
+  const roomId = searchParams.get("room-id");
+
   const {
     room,
+    setRoom,
     currentPlayer,
     createRoom,
     joinRoom,
@@ -28,21 +22,84 @@ const Index = () => {
     addDemoPlayers,
     calculateAverage,
     leaveRoom,
+    verifyRoom,
+    verifyPlayer,
   } = usePokerRoom();
 
+  useEffect(() => {
+    socket.on("user-joined", (data) => {
+      if (data) {
+        verifyRoom(roomId).then((room) => {
+          if (room) {
+            setRoom(room);
+          }
+        });
+      }
+    });
+
+    socket.on("user-left", (data) => {
+      if (data) {
+        verifyRoom(roomId).then((room) => {
+          if (room) {
+            setRoom(room);
+          }
+        });
+      }
+    });
+
+    return () => {
+      socket.off("user-joined");
+      socket.off("user-left");
+    };
+  }, [roomId]);
+
   // Show lobby if not in a room
-  if (!room || !currentPlayer) {
+  if ((!room || !currentPlayer) && !roomId) {
+    return <LobbyForm onCreateRoom={createRoom} onJoinRoom={joinRoom} />;
+  }
+
+  if (!room && !currentPlayer) {
+    // Hiện popup đặt tên room và người chơi -> set thành host room
+    console.log("1");
+    verifyRoom(roomId).then((data) => {
+      if (data) {
+        window.location.reload();
+      }
+    });
     return (
-      <LobbyForm
-        onCreateRoom={createRoom}
-        onJoinRoom={joinRoom}
+      <LobbyDialog
+        roomId={roomId}
+        room={room}
+        onCreate={createRoom}
+        onJoin={joinRoom}
       />
     );
+  } else if (room && !currentPlayer) {
+    // Hiện popup đặt tên người chơi
+    console.log("2");
+    verifyRoom(roomId).then((data) => {
+      console.log(data);
+      if (data) {
+      }
+    });
+    return (
+      <LobbyDialog
+        roomId={roomId}
+        room={room}
+        onCreate={createRoom}
+        onJoin={joinRoom}
+      />
+    );
+  } else {
+    // Verify ID người chơi và set vào localstore
+    console.log("3");
+    verifyPlayer(roomId ?? room?.id, currentPlayer.id);
   }
 
   // Show game room
   return (
     <GameRoom
+      roomId={roomId}
       room={room}
       currentPlayer={currentPlayer}
       onVote={vote}
