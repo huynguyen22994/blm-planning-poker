@@ -112,18 +112,8 @@ export const usePokerRoom = () => {
 
   const reset = useCallback(() => {
     if (!room) return;
-    setRoom((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        isRevealed: false,
-        currentRound: prev.currentRound + 1,
-        players: prev.players.map((p) => ({
-          ...p,
-          vote: null,
-          hasVoted: false,
-        })),
-      };
+    socket.emit("reset-round", {
+      roomId: room?.id,
     });
     setCurrentPlayer((prev) =>
       prev ? { ...prev, vote: null, hasVoted: false } : prev,

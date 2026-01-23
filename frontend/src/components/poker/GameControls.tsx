@@ -97,7 +97,7 @@ export const GameControls = ({
           </Button>
         )}
 
-        <Button
+        {/* <Button
           onClick={onAddDemoPlayers}
           variant="outline"
           className="w-full gap-2"
@@ -105,7 +105,7 @@ export const GameControls = ({
         >
           <Users className="w-4 h-4" />
           Add Demo Players
-        </Button>
+        </Button> */}
       </div>
     </div>
   );

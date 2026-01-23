@@ -51,8 +51,6 @@ export class AppService {
 
     await this.cache.set(roomId, newRoom, CACHE_TTL.HOUR);
 
-    console.log(await this.cache.get(roomId));
-
     return {
       success: true,
       message: 'Create room success',
@@ -171,6 +169,28 @@ export class AppService {
     if (!existingRoom) return;
 
     existingRoom.isRevealed = true;
+
+    await this.cache.set(roomId, existingRoom, CACHE_TTL.HOUR);
+  }
+
+  @OnEvent('room.player.reset', { async: true })
+  async handleResetRound(payload: { roomId: string }) {
+    const { roomId } = payload;
+
+    const existingRoom: Room = await this.cache.get(roomId);
+    if (!existingRoom) return;
+
+    const currentRound = existingRoom.currentRound ?? 0;
+
+    existingRoom.isRevealed = false;
+    existingRoom.currentRound = currentRound + 1;
+    existingRoom.players = existingRoom.players.map((item) => {
+      return {
+        ...item,
+        vote: null,
+        hasVoted: false,
+      };
+    });
 
     await this.cache.set(roomId, existingRoom, CACHE_TTL.HOUR);
   }

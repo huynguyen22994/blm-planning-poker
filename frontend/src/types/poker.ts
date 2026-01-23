@@ -1,6 +1,6 @@
 export type PlayerRole = 'host' | 'player' | 'spectator';
 
-export type CardValue = '0' | '1' | '2' | '3' | '5' | '8' | '13' | '21' | '34' | '55' | '89' | '?' | '☕';
+export type CardValue = '0.5' | '1' | '2' | '3' | '5' | '8' | '13' | '20' | '?' | '☕';
 
 export interface Player {
   id: string;
@@ -19,4 +19,4 @@ export interface Room {
   currentRound: number;
 }
 
-export const FIBONACCI_CARDS: CardValue[] = ['0', '1', '2', '3', '5', '8', '13', '21', '34', '55', '89', '?', '☕'];
+export const FIBONACCI_CARDS: CardValue[] = ['0.5', '1', '2', '3', '5', '8', '13', '20', '?', '☕'];

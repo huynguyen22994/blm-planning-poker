@@ -121,4 +121,23 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       roomId,
     });
   }
+
+  @SubscribeMessage('reset-round')
+  async handleResetRound(
+    @MessageBody() message: any,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const { roomId } = message;
+
+    if (!roomId) return;
+
+    client.join(roomId);
+    await this.eventEmitter.emitAsync('room.player.reset', {
+      roomId,
+    });
+
+    this.server.to(roomId).emit('room-reset-round', {
+      roomId,
+    });
+  }
 }

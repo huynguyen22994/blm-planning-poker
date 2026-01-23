@@ -67,11 +67,22 @@ const Index = () => {
       }
     });
 
+    socket.on("room-reset-round", (data) => {
+      if (data) {
+        verifyRoom(roomId).then((room) => {
+          if (room) {
+            setRoom(room);
+          }
+        });
+      }
+    });
+
     return () => {
       socket.off("user-joined");
       socket.off("user-left");
       socket.off("player-voted");
       socket.off("room-reveal");
+      socket.off("room-reset-round");
     };
   }, [roomId]);
 
