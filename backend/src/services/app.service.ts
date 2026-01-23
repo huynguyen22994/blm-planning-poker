@@ -9,7 +9,7 @@ import {
 } from '../dto/join-room.dto';
 import { generateId } from '../utils';
 import { CACHE_TTL } from '../constants/cache-ttl.constant';
-import { Player, Room } from '../types';
+import { CardValue, Player, Room } from '../types';
 import { EventsGateway } from '../app.events.gateways';
 import { OnEvent } from '@nestjs/event-emitter';
 
@@ -127,14 +127,50 @@ export class AppService {
   async handlePlayerLeft(payload: { roomId: string; playerId: string }) {
     const { roomId, playerId } = payload;
 
-    console.log(payload);
-
     const existingRoom: Room = await this.cache.get(roomId);
     if (!existingRoom) return;
 
     existingRoom.players = existingRoom.players.filter(
       (item) => item.id !== playerId,
     );
+
+    if (existingRoom.players.length === 0) {
+      await this.cache.del(roomId);
+    } else {
+      if (existingRoom.hostId === playerId) {
+        existingRoom.hostId = existingRoom.players[0]?.id;
+        existingRoom.players[0].role = 'host';
+      }
+      await this.cache.set(roomId, existingRoom, CACHE_TTL.HOUR);
+    }
+  }
+
+  @OnEvent('room.player.vote', { async: true })
+  async handleVote(payload: { roomId: string; vote: string; player: Player }) {
+    const { roomId, vote, player } = payload;
+
+    const existingRoom: Room = await this.cache.get(roomId);
+    if (!existingRoom) return;
+
+    existingRoom.players = existingRoom.players.map((item) => {
+      if (item.id === player.id) {
+        item.vote = vote as CardValue;
+        item.hasVoted = true;
+      }
+      return item;
+    });
+
+    await this.cache.set(roomId, existingRoom, CACHE_TTL.HOUR);
+  }
+
+  @OnEvent('room.player.reveal', { async: true })
+  async handleReveal(payload: { roomId: string }) {
+    const { roomId } = payload;
+
+    const existingRoom: Room = await this.cache.get(roomId);
+    if (!existingRoom) return;
+
+    existingRoom.isRevealed = true;
 
     await this.cache.set(roomId, existingRoom, CACHE_TTL.HOUR);
   }

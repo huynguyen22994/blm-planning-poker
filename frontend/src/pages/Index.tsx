@@ -12,8 +12,8 @@ const Index = () => {
 
   const {
     room,
-    setRoom,
     currentPlayer,
+    setRoom,
     createRoom,
     joinRoom,
     vote,
@@ -47,9 +47,31 @@ const Index = () => {
       }
     });
 
+    socket.on("player-voted", (data) => {
+      if (data) {
+        verifyRoom(roomId).then((room) => {
+          if (room) {
+            setRoom(room);
+          }
+        });
+      }
+    });
+
+    socket.on("room-reveal", (data) => {
+      if (data) {
+        verifyRoom(roomId).then((room) => {
+          if (room) {
+            setRoom(room);
+          }
+        });
+      }
+    });
+
     return () => {
       socket.off("user-joined");
       socket.off("user-left");
+      socket.off("player-voted");
+      socket.off("room-reveal");
     };
   }, [roomId]);
 

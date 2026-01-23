@@ -89,16 +89,10 @@ export const usePokerRoom = () => {
     (value: CardValue) => {
       if (!room || !currentPlayer) return;
 
-      setRoom((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          players: prev.players.map((p) =>
-            p.id === currentPlayer.id
-              ? { ...p, vote: value, hasVoted: true }
-              : p,
-          ),
-        };
+      socket.emit("vote", {
+        roomId: room?.id,
+        vote: value,
+        player: currentPlayer,
       });
 
       setCurrentPlayer((prev) => {
@@ -110,12 +104,14 @@ export const usePokerRoom = () => {
   );
 
   const reveal = useCallback(() => {
-    if (!room || currentPlayer?.role !== "host") return;
-    setRoom((prev) => (prev ? { ...prev, isRevealed: true } : prev));
+    if (!room) return;
+    socket.emit("reveal", {
+      roomId: room?.id,
+    });
   }, [room, currentPlayer]);
 
   const reset = useCallback(() => {
-    if (!room || currentPlayer?.role !== "host") return;
+    if (!room) return;
     setRoom((prev) => {
       if (!prev) return prev;
       return {

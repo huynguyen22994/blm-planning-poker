@@ -80,4 +80,45 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       console.log(`Player ${playerId} left room ${roomId}`);
     }, 800);
   }
+
+  @SubscribeMessage('vote')
+  async handleVote(
+    @MessageBody() message: any,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const { roomId, vote, player } = message;
+
+    if (!roomId || !player) return;
+
+    client.join(roomId);
+    await this.eventEmitter.emitAsync('room.player.vote', {
+      roomId,
+      vote,
+      player,
+    });
+
+    this.server.to(roomId).emit('player-voted', {
+      roomId,
+      playerId: player.id,
+    });
+  }
+
+  @SubscribeMessage('reveal')
+  async handleReveal(
+    @MessageBody() message: any,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const { roomId } = message;
+
+    if (!roomId) return;
+
+    client.join(roomId);
+    await this.eventEmitter.emitAsync('room.player.reveal', {
+      roomId,
+    });
+
+    this.server.to(roomId).emit('room-reveal', {
+      roomId,
+    });
+  }
 }
