@@ -4,6 +4,7 @@ import { PlayerList } from "./PlayerList";
 import { GameControls } from "./GameControls";
 import { Button } from "@/components/ui/button";
 import { LogOut, Spade } from "lucide-react";
+import { EmotionFloatingButtons } from '@/components/ui/emotion-floating-buttons'
 
 interface GameRoomProps {
   roomId: string;
@@ -115,6 +116,9 @@ export const GameRoom = ({
           </div>
         </div>
       </main>
+
+      {/* Emotion Floating Button */}
+      <EmotionFloatingButtons />
     </div>
   );
 };

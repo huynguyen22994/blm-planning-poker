@@ -214,6 +214,19 @@ export const usePokerRoom = () => {
     [],
   );
 
+  const reaction = useCallback(
+    (emotion: string) => {
+      if (!room || !currentPlayer) return;
+
+      socket.emit("reaction", {
+        roomId: room?.id,
+        emotion: emotion,
+        player: currentPlayer,
+      });
+    },
+    [room, currentPlayer],
+  );
+
   return {
     room,
     currentPlayer,
@@ -228,5 +241,6 @@ export const usePokerRoom = () => {
     leaveRoom,
     verifyRoom,
     verifyPlayer,
+    reaction,
   };
 };

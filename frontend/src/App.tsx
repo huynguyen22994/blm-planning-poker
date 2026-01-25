@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import { socket } from "./lib/socket";
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import api from "@/lib/axios";
 
 const queryClient = new QueryClient();
 
@@ -15,6 +16,19 @@ const App = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    /** HTTP PING */
+    const ping = async () => {
+      try {
+        const result = await api.get("/api/ping");
+        console.log(result);
+      } catch (error) {
+        console.error("ping error", error);
+      }
+    };
+    ping();
+    const intervalId = setInterval(ping, 2 * 60 * 1000);
+
+    /** SOCKET EVENTS */
     socket.on("connect", () => {
       console.log("connected:", socket.id);
     });
@@ -26,7 +40,6 @@ const App = () => {
     });
 
     socket.on("user-joined", (data) => {
-      console.log("User joined room:", data);
       const { player } = data ?? {};
       toast({
         open: true,
@@ -35,12 +48,9 @@ const App = () => {
       });
     });
 
-    socket.on("room-event", (data) => {
-      console.log("Room event:", data);
-    });
-
     return () => {
       socket.off("pong");
+      clearInterval(intervalId);
     };
   }, []);
 

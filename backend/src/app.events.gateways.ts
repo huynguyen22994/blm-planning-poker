@@ -140,4 +140,21 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       roomId,
     });
   }
+
+  @SubscribeMessage('reaction')
+  async handleReaction(
+    @MessageBody() message: any,
+    @ConnectedSocket() client: Socket,
+  ) {
+    const { roomId, emotion, player } = message;
+
+    if (!roomId || !player) return;
+
+    client.join(roomId);
+    this.server.to(roomId).emit('player-reacted', {
+      roomId,
+      emotion,
+      player: player,
+    });
+  }
 }

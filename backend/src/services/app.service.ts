@@ -21,7 +21,7 @@ export class AppService {
   ) {}
 
   getHello(): string {
-    return 'Hello World!';
+    return 'Ping Pong!';
   }
 
   async createRoom(body: CreateRoomDto): Promise<unknown> {
